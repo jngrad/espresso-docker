@@ -47,6 +47,7 @@ RUN apt-get update && \
         nvidia-cuda-toolkit \
         openmpi-bin \
         openssh-client \
+        perl \
         pkg-config \
         pre-commit \
         python3 \
@@ -88,8 +89,11 @@ ENV NVIDIA_DRIVER_CAPABILITIES compute,utility
 ENV JUPYTER_PLATFORM_DIRS 1
 
 RUN useradd -m espresso
-USER espresso
 ENV HOME="/home/espresso"
+RUN echo | cpan && \
+    echo | cpan JSON::XS && \
+    chown -R espresso:espresso /home/espresso/.cpan/
+USER espresso
 ENV PATH "$HOME/.local/bin:$PATH"
 RUN cd "${HOME}" && \
   python3 -m venv --system-site-packages venv && \
@@ -98,8 +102,6 @@ RUN cd "${HOME}" && \
   jupyterlab==4.0.13 \
   sphinx-toggleprompt==0.5.2 && \
   deactivate && \
-  echo | cpan && \
-  echo | cpan JSON::XS && \
   mkdir -p "${HOME}/.local/bin" && \
   mkdir -p "${HOME}/.local/etc/alternatives" && \
   mkdir -p "${HOME}/.local/var/lib/alternatives" && \
