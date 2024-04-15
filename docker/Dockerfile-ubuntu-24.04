@@ -22,7 +22,11 @@ RUN apt-get update && \
         git \
         gnupg \
         graphviz \
+        ipython3 \
         jq \
+        jupyter-client \
+        jupyter-core \
+        jupyter-nbconvert \
         lcov \
         libblas-dev \
         libboost-dev \
@@ -52,6 +56,7 @@ RUN apt-get update && \
         python3-coverage \
         python3-dev \
         python3-h5py \
+        python3-ipykernel \
         python3-lxml \
         python3-matplotlib \
         python3-nbconvert \
@@ -69,6 +74,7 @@ RUN apt-get update && \
         python3-venv \
         python3-vtk9 \
         rsync \
+        texlive-base \
         vim && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
@@ -79,10 +85,12 @@ RUN bash /tmp/install-pfft.sh     && rm /tmp/install-pfft.sh && \
 
 ENV NVIDIA_VISIBLE_DEVICES all
 ENV NVIDIA_DRIVER_CAPABILITIES compute,utility
+ENV JUPYTER_PLATFORM_DIRS 1
 
 RUN useradd -m espresso
 USER espresso
 ENV HOME="/home/espresso"
+ENV PATH "$HOME/.local/bin:$PATH"
 RUN cd "${HOME}" && \
   python3 -m venv --system-site-packages venv && \
   . venv/bin/activate && \
@@ -90,5 +98,12 @@ RUN cd "${HOME}" && \
   jupyterlab==4.0.13 \
   sphinx-toggleprompt==0.5.2 && \
   deactivate && \
+  echo | cpan && \
+  echo | cpan JSON::XS && \
+  mkdir -p "${HOME}/.local/bin" && \
+  mkdir -p "${HOME}/.local/etc/alternatives" && \
+  mkdir -p "${HOME}/.local/var/lib/alternatives" && \
+  mkdir -p "${HOME}/.local/share/jupyter/kernels" && \
+  ln -s "${HOME}/venv/share/jupyter/kernels/python3" "${HOME}/.local/share/jupyter/kernels/python3" && \
   echo "source ${HOME}/venv/bin/activate" >> "${HOME}/.bash_login"
 WORKDIR /home/espresso
