@@ -66,7 +66,7 @@ RUN apt-get update && \
         python3-pint \
         python3-pip \
         python3-pycodestyle \
-        python3-requests  \
+        python3-requests \
         python3-scipy \
         python3-setuptools \
         python3-sphinx \
@@ -88,7 +88,7 @@ ENV NVIDIA_VISIBLE_DEVICES all
 ENV NVIDIA_DRIVER_CAPABILITIES compute,utility
 ENV JUPYTER_PLATFORM_DIRS 1
 
-RUN useradd -m espresso
+RUN userdel ubuntu && rm -rf /home/ubuntu && useradd -u 1000 -m espresso
 ENV HOME="/home/espresso"
 RUN echo | cpan && \
     echo | cpan JSON::XS && \
