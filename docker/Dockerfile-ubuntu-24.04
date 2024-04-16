@@ -94,7 +94,8 @@ RUN echo | cpan && \
     echo | cpan JSON::XS && \
     chown -R espresso:espresso /home/espresso/.cpan/
 USER espresso
-ENV PATH "$HOME/.local/bin:$PATH"
+ENV VIRTUAL_ENV "$HOME/venv"
+ENV PATH "$HOME/.local/bin:$VIRTUAL_ENV/bin:$PATH"
 RUN cd "${HOME}" && \
   python3 -m venv --system-site-packages venv && \
   . venv/bin/activate && \
@@ -106,6 +107,5 @@ RUN cd "${HOME}" && \
   mkdir -p "${HOME}/.local/etc/alternatives" && \
   mkdir -p "${HOME}/.local/var/lib/alternatives" && \
   mkdir -p "${HOME}/.local/share/jupyter/kernels" && \
-  ln -s "${HOME}/venv/share/jupyter/kernels/python3" "${HOME}/.local/share/jupyter/kernels/python3" && \
-  echo "source ${HOME}/venv/bin/activate" >> "${HOME}/.bash_login"
+  ln -s "${HOME}/venv/share/jupyter/kernels/python3" "${HOME}/.local/share/jupyter/kernels/python3"
 WORKDIR /home/espresso
