@@ -66,7 +66,7 @@ RUN apt-get update && \
         python3-numpydoc \
         python3-pint \
         python3-pip \
-        python3-pkg-resources \
+        python3-packaging \
         python3-requests \
         python3-scipy \
         python3-setuptools \
@@ -108,6 +108,9 @@ RUN cd "${HOME}" && \
   autopep8==2.1.0 \
   pycodestyle==2.11.1 \
   sphinx-toggleprompt==0.5.2 && \
+  jupyter nbconvert --generate-config && \
+  echo 'c.HTMLExporter.mathjax_url = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS_CHTML-full,Safe"' >> "${HOME}/.config/jupyter/jupyter_nbconvert_config.py" && \
+  echo 'c.HTMLExporter.require_js_url = "https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"' >> "${HOME}/.config/jupyter/jupyter_nbconvert_config.py" && \
   deactivate && \
   mkdir -p "${HOME}/.local/bin" && \
   mkdir -p "${HOME}/.local/etc/alternatives" && \
