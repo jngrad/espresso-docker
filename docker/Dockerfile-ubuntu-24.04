@@ -1,7 +1,4 @@
 FROM ubuntu:noble
-COPY install-pfft.sh /tmp
-COPY install-scafacos.sh /tmp
-COPY install-kokkos.sh /tmp
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
         apt-utils \
@@ -44,7 +41,6 @@ RUN apt-get update && \
         libopenmpi-dev \
         libthrust-dev \
         libtool \
-        npm \
         nvidia-cuda-toolkit \
         openmpi-bin \
         openssh-client \
@@ -82,6 +78,10 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
+COPY install-pfft.sh /tmp
+COPY install-scafacos.sh /tmp
+COPY install-kokkos.sh /tmp
+
 RUN sh /tmp/install-pfft.sh     && rm /tmp/install-pfft.sh && \
     sh /tmp/install-scafacos.sh && rm /tmp/install-scafacos.sh && \
     sh /tmp/install-kokkos.sh   && rm /tmp/install-kokkos.sh && \
@@ -90,6 +90,8 @@ RUN sh /tmp/install-pfft.sh     && rm /tmp/install-pfft.sh && \
 ENV NVIDIA_VISIBLE_DEVICES all
 ENV NVIDIA_DRIVER_CAPABILITIES compute,utility
 ENV JUPYTER_PLATFORM_DIRS 1
+
+COPY --chown=1000:1000 jupyter_nbconvert_config.json /tmp
 
 RUN userdel ubuntu && rm -rf /home/ubuntu && useradd -u 1000 -m espresso
 ENV HOME="/home/espresso"
@@ -103,18 +105,18 @@ RUN cd "${HOME}" && \
   python3 -m venv --system-site-packages venv && \
   . venv/bin/activate && \
   python3 -m pip install --no-cache \
-  jupyterlab==4.0.13 \
-  pep8==1.7.1 \
-  autopep8==2.1.0 \
-  pycodestyle==2.11.1 \
-  sphinx-toggleprompt==0.5.2 && \
-  jupyter nbconvert --generate-config && \
-  echo 'c.HTMLExporter.mathjax_url = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS_CHTML-full,Safe"' >> "${HOME}/.config/jupyter/jupyter_nbconvert_config.py" && \
-  echo 'c.HTMLExporter.require_js_url = "https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"' >> "${HOME}/.config/jupyter/jupyter_nbconvert_config.py" && \
+    jupyterlab==4.0.13 \
+    pep8==1.7.1 \
+    autopep8==2.1.0 \
+    pycodestyle==2.11.1 \
+    sphinx-toggleprompt==0.5.2 && \
+  jupyter_config_root="$(jupyter --paths --json | jq ".config[0]")" && \
+  jupyter_kernels_root="$(jupyter --paths --json | jq ".data[0]")/kernels" && \
+  mkdir -p "${jupyter_config_root}" "${jupyter_kernels_root}" && \
+  mv "/tmp/jupyter_nbconvert_config.json" "${jupyter_config_root}/" && \
+  ln -s "${VIRTUAL_ENV}/share/jupyter/kernels/python3" "${jupyter_kernels_root}/python3" && \
   deactivate && \
   mkdir -p "${HOME}/.local/bin" && \
   mkdir -p "${HOME}/.local/etc/alternatives" && \
-  mkdir -p "${HOME}/.local/var/lib/alternatives" && \
-  mkdir -p "${HOME}/.local/share/jupyter/kernels" && \
-  ln -s "${HOME}/venv/share/jupyter/kernels/python3" "${HOME}/.local/share/jupyter/kernels/python3"
+  mkdir -p "${HOME}/.local/var/lib/alternatives"
 WORKDIR /home/espresso
